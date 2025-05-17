@@ -6,7 +6,7 @@ import requests
 
 
 def main():
-    producer = KafkaProducer(bootstrap_servers="kafka-server:9092", value_serializer=lambda v: json.dumps(v).encode("utf-8"))
+    producer = KafkaProducer(bootstrap_servers="kafka:9092", value_serializer=lambda v: json.dumps(v).encode("utf-8"))
     response = requests.get("https://stream.wikimedia.org/v2/stream/page-create", stream=True)
     client = sseclient.SSEClient(response)
 
@@ -14,7 +14,7 @@ def main():
         if event.event == 'message':
             try:
                 data = json.loads(event.data)
-                producer.send("input", value=data)
+                producer.send("input_stream", value=data)
             except Exception as e:
                 print(e)
 

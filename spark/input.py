@@ -13,13 +13,14 @@ schema = StructType([
         StructField("user_is_bot", BooleanType(), True),
         StructField("user_text", StringType(), True)
     ]), True),
-    StructField("page_title", StringType(), True)
+    StructField("page_title", StringType(), True),
+    StructField("page_id", LongType(), True)
 ])
 
 df_raw = spark.readStream \
     .format("kafka") \
-    .option("kafka.bootstrap.servers", "kafka-server:9092") \
-    .option("subscribe", "input") \
+    .option("kafka.bootstrap.servers", "kafka:9092") \
+    .option("subscribe", "input_stream") \
     .option("startingOffsets", "latest") \
     .load()
 
@@ -30,14 +31,15 @@ df = df_raw.select(
          F.col("data.performer.user_is_bot").alias("created_by_bot"),
          F.col("data.performer.user_id").alias("user_id"),
          F.col("data.performer.user_text").alias("username"),
-         F.col("data.page_title").alias("page_title"))
+         F.col("data.page_title").alias("page_title"),
+         F.col("data.page_id").alias("page_id"))
 
-df_out = df.selectExpr("to_json(struct(time, domain, created_by_bot, user_id, username, page_title)) AS value")
+df_out = df.selectExpr("to_json(struct(time, domain, created_by_bot, user_id, username, page_title, page_id)) AS value")
 
 query = df_out.writeStream \
     .format("kafka") \
-    .option("kafka.bootstrap.servers", "kafka-server:9092") \
-    .option("topic", "processed") \
+    .option("kafka.bootstrap.servers", "kafka:9092") \
+    .option("topic", "output_stream") \
     .option("checkpointLocation", "/tmp/spark-checkpoints/processed") \
     .start()
 

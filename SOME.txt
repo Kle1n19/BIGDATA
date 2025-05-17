@@ -1,3 +1,0 @@
-docker run -it --rm --network spark-network bitnami/kafka:3.6.2 kafka-console-consumer.sh --bootstrap-server kafka-server:9092 --topic input --from-beginning
-
-docker run -it --rm --network spark-network bitnami/kafka:3.6.2 kafka-console-consumer.sh --bootstrap-server kafka-server:9092 --topic processed --from-beginning
