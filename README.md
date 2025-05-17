@@ -32,7 +32,7 @@ spark-submit  --conf spark.jars.ivy=/opt/app --packages org.apache.spark:spark-s
 ```bash
 cd api
 docker build -t my-api .
-docker run -d --name my-fastapi-api -network spark-network -v ./spark/output:/output -p 8000:8000 my-api
+docker run -d --name my-fastapi-api --network spark-network -v ./spark/output:/output -p 8000:8000 my-api
 ```
 ## Результати
 ## Запис в *Cassandra*:

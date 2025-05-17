@@ -8,7 +8,8 @@ import os
 def get_time_bounds():
     now = datetime.utcnow().replace(minute=0, second=0, microsecond=0)
     end_excl_last = now - timedelta(hours=1)
-    start = end_excl_last - timedelta(hours=8)
+    print(now)
+    start = end_excl_last - timedelta(hours=7)
     return start, end_excl_last
 
 def format_hour(dt):
