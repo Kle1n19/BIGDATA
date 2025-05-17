@@ -93,3 +93,15 @@ docker run -d --name my-fastapi-api -network spark-network -v ./spark/output:/ou
 ![](/images/bot_stat.png)
 #### Aggregated statistics containing the number of created pages for each Wikipedia domain for each hour in the last 6 hours
 ![](/images/domain_stat.png)
+#### Return the list of existing domains for which pages were created.
+![](/images/domains.png)
+#### Return all the pages which were created by the user with a specified user_id.
+![](/images/pages_by_uid.png)
+#### Return the number of articles created for a specified domain.
+![](/images/domain_count.png)
+#### Return the page with the specified page_id
+![](/images/page_ifo.png)
+#### Return the id, name, and the number of created pages of all the users who created at least one page in a specified time range.
+![](/images/page_creations.png)
+ 
+
