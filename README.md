@@ -1,4 +1,50 @@
 # Bigdata Project
+## Джерело даних
+
+Джерело — Wikimedia EventStreams API: [https://stream.wikimedia.org/v2/stream/page-create](https://stream.wikimedia.org/v2/stream/page-create). Це API надає оновлення в реальному часі про події створення сторінок у Вікіпедії.
+
+## Компоненти та архітектурні рішення
+### 1. **Docker та Docker Compose**
+
+- **Навіщо:** Стабільне середовище розробки(у випадку зі `Spark` не врятувало).
+- **Використання:**
+  - Контейнери для Spark (майстер та воркер), Kafka, Zookeeper, Cassandra та API.
+  - Скрипт `run.sh` ініціалізує мережу та сервіси.
+
+### 2. **Kafka**
+
+- **Навіщо:** Kafka — система для обробки потокових даних у реальному часі.
+- **Використання:**
+  - Топіки Kafka (`input` і `processed`) використовуються для отримання даних як є та передачі оброблених далі.
+  - Сервіс `generate` надсилає дані в `input` тоопік, а Spark обробляє їх і передає у `processed`.
+
+### 3. **Spark**
+
+- **Навіщо:** Apache Spark — потужний фреймворк для розподіленої обробки даних. Підтримує потокову та batch processing.
+- **Використання:**
+  - `input.py`: читає дані з теми `input`, обробляє їх і пише у `processed`.
+  - `output.py`: читає з `processed` і записує в Cassandra.
+  - `process.py`: виконує періодичну обробку даних з Cassandra.
+
+### 4. **Cassandra**
+
+- **Навіщо:** Cassandra — NoSQL база даних, оптимізована для високої доступності та масштабування, ідеально підходить для time series processing.
+- **Використання:**
+  - Дві таблиці (`domain_page_stats` і `user_stat`) зберігають оброблені аналітичні дані.
+  - Схема визначена у `schema.cql`. Архітектура схеми була розроблена з урахуванням необіхідної інформації що слід обробляти й отримувати.  
+
+### 5. **Kafka Producer**
+
+- **Навіщо:**  Kafka Producer — для надсилання даних у Kafka.
+- **Використання:**
+  - `generate/main.py`: отримує дані з Wikimedia API та надсилає в Kafka `input`.
+
+### 6. **API**
+
+- **Навіщо:** Доступ до оброблених даних через HTTP-запити.
+- **Використання:**
+  - Сервіс на базі FastAPI надає ендпоінти для запиту даних з Cassandra. Для швидкодії вони читають вже готову відповідь, а не чекають на її отримання
+  - 
 ## Running 
 1. Надайте дозвіл та запустіть 
 ```bash
@@ -32,18 +78,18 @@ spark-submit  --conf spark.jars.ivy=/opt/app --packages org.apache.spark:spark-s
 ```bash
 cd api
 docker build -t my-api .
-docker run -d --name my-fastapi-api --network spark-network -v ./spark/output:/output -p 8000:8000 my-api
+docker run -d --name my-fastapi-api -network spark-network -v ./spark/output:/output -p 8000:8000 my-api
 ```
-## Результати
-## Запис в *Cassandra*:
+### Результати
+### Запис в *Cassandra*:
 ![](/images/domain_page.png)
 ![](/images/bots.png)
-## Результати форматування
+### Результати форматування
 Для ознайомлення слід відкрити `./spark/output`
-## API
-### Top 20 users
+### API
+#### Top 20 users
 ![](/images/top20.png)
-### Statistics about the number of pages created by bots for each of the domains for the last 6 hours
+#### Statistics about the number of pages created by bots for each of the domains for the last 6 hours
 ![](/images/bot_stat.png)
-### Aggregated statistics containing the number of created pages for each Wikipedia domain for each hour in the last 6 hours
+#### Aggregated statistics containing the number of created pages for each Wikipedia domain for each hour in the last 6 hours
 ![](/images/domain_stat.png)
